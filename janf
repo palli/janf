@@ -2,7 +2,8 @@
 
 
 NEW_NAME=$1
-
+OLD_NAME=$2
+OLD_GIT_REPO=$3
 if [ -z "$NEW_NAME" ]; then
   cat << EOF 
 Usage: $0 <new_name>
@@ -12,6 +13,15 @@ Example:
   $0 ohmnohmmohn
 
 This will fork nagios and rename it to ohmnohmmon
+
+To fork a nagios fork:
+
+Usage: $0 <new_name> <old_name> <full git repo url>
+
+Example:
+
+  $0 nomurohmnohmmohn ohmnohmmohn https://github.com/cookie_nomster/ohmnohmmohn
+
 EOF
   exit 1
 fi
@@ -20,11 +30,16 @@ TMPDIR=$(mktemp -d)
 #pushd $TMPDIR
 #git clone git://git.code.sf.net/p/nagios/nagioscore $NEW_NAME
 cd $TMPDIR
-git clone https://github.com/ageric/nagios $NEW_NAME
+if [ -n "$OLD_NAME" ] && [ -n "$OLD_GIT_REPO" ]; then
+  git clone $OLD_GIT_REPO $NEW_NAME
+else
+  git clone https://github.com/ageric/nagios $NEW_NAME
+  OLD_NAME="nagios"
+fi
 cd $NEW_NAME
 # Find all files containing the original name
-for i in `find * -iname \*nagios\* -type f`; do
-  NEW_FILENAME=`echo $i | sed "s/nagios/$NEW_NAME/gI"`
+for i in $(find * -iname \*"$OLD_NAME"\* -type f); do
+  NEW_FILENAME=`echo $i | sed "s/$OLD_NAME/$NEW_NAME/gI"`
   git mv "$i" "$NEW_FILENAME"
 done
 
@@ -33,12 +48,12 @@ git commit -a -m "Renamed all files to reflect name change from nagios to $NEW_N
 
 # Replace the phrase nagios in every file
 for i in `grep -irl nagios *`; do
-  sed -i "s/nagios/$NEW_NAME/gI" "$i"
+  sed -i "s/$OLD_NAME/$NEW_NAME/gI" "$i"
   
   # Undo the change if there was mention of copyright entry
   # We try as best as we can to keep mentions of copyright inside
   # the code unchanged
-  sed -i "s/\(.*opyright.*\)$NEW_NAME\(.*\)/\1nagios\2/g" "$i"
+  sed -i "s/\(.*opyright.*\)$NEW_NAME\(.*\)/\1$OLD_NAME\2/g" "$i"
   
   # Undo the change if it mentions nagios.org, usually it means it is a reference
   # To an email or a a URL so we dont change that
@@ -46,7 +61,7 @@ for i in `grep -irl nagios *`; do
   
 done 
 
-git commit -a -m "Applied name change from nagios to $NEW_NAME inside all files"
+git commit -a -m "Applied name change from $OLD_NAME to $NEW_NAME inside all files"
 
 echo ""
 echo ""
