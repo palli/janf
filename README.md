@@ -19,6 +19,15 @@ Example. To create a new project based ohm nohm monitor (or ohmnohmmon for short
     cd janf
     ./janf ohmnohmmon
 
+Features to good to be true
+===========================
+
+If you believe any of these features are not present in janf I am happy to accept notifications in forms of pull requests that fix the problem.
+
+  - Automatically create a github and sourceforge repo for your project
+  - Tell you how many users have installed your fork
+  - Register your project on freecode
+
 Disclaimer
 ==========
 In a perfect world there would be no need to fork to a good open source project. 
